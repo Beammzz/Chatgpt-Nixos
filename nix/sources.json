@@ -1,0 +1,13 @@
+{
+  "version": "26.928.31416",
+  "aarch64-linux": {
+    "architecture": "arm64",
+    "url": "https://persistent.oaistatic.com/codex-app-prod/linux/deb/pool/main/c/chatgpt/chatgpt_26.928.31416_arm64.deb",
+    "sha256": "b3c3f37dedfc57db72e810a1dc5be7b22586f0b99b7d4875868b06bdd855ba86"
+  },
+  "x86_64-linux": {
+    "architecture": "amd64",
+    "url": "https://persistent.oaistatic.com/codex-app-prod/linux/deb/pool/main/c/chatgpt/chatgpt_26.928.31416_amd64.deb",
+    "sha256": "c463727f1ed5dced78338c8e2a65d889bd153276ff373fd77698ccb9af32d181"
+  }
+}
