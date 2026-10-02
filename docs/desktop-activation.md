@@ -81,3 +81,30 @@ the previous generation recorded above, and restoring both unmanaged MIME files.
 For a separate login experiment, use workspace paths for `CODEX_HOME`,
 `XDG_CACHE_HOME`, and `--user-data-dir`. Route callbacks to that same profile;
 do not sign out the existing user profile to create a fresh-login test.
+
+## GitHub input migration
+
+On 2026-10-02, after publishing `Beammzz/Chatgpt-Nixos`, the user requested
+replacing the local ChatGPT flake input with the GitHub repository. The dotfiles
+input is now:
+
+```nix
+chatgpt-nixos.url = "github:Beammzz/Chatgpt-Nixos?dir=nix";
+```
+
+The `nix/` flake remains in its existing repository subdirectory. The consumer's
+lock file pins commit `f8e29092a01e21e756244c762742650335f1ebdf` with source hash
+`sha256-Jpu35WffvvLBo2O4b/ehnWPQoBzKO1lS9Muprj5L3MM=`. Updating only
+`chatgpt-nixos` preserved every other lock node exactly.
+
+A workspace-staged copy of the actual dotfiles configuration built the ARM64
+`homeConfigurations.harumi.activationPackage` successfully. The tested
+`flake.nix` and `flake.lock` were then applied to `/home/harumi/.dotfiles`, after
+checking that the originals had not changed during preparation. Backups,
+staged files, and the built generation link are under `artifacts/github-input/`.
+The resulting generation is
+`/nix/store/alzjbdsikmdk9kqxd4vr1lcz0c5sikax-home-manager-generation`.
+No Home Manager activation was performed for this input-only migration.
+
+Future ChatGPT source updates can use `nix flake update chatgpt-nixos` from the
+dotfiles directory, followed by the usual Home Manager build/switch workflow.

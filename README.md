@@ -52,10 +52,17 @@ packages; it does not change system-wide Nix configuration.
 
 ## Home Manager desktop integration
 
-Add a local input to your existing flake:
+Add the GitHub input to your existing flake:
 
 ```nix
-inputs.chatgpt-nixos.url = "path:/home/harumi/Projects/chatgpt/nix";
+inputs.chatgpt-nixos.url = "github:Beammzz/Chatgpt-Nixos?dir=nix";
+```
+
+The `dir=nix` parameter selects the repository's flake directory. Your
+`flake.lock` pins the GitHub revision. Update only this input when needed:
+
+```sh
+nix flake update chatgpt-nixos
 ```
 
 Add these modules to your Home Manager configuration:
