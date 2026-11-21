@@ -9,15 +9,15 @@ export CODEX_HOME="$task_root/artifacts/smoke-codex"
 export XDG_CACHE_HOME="$task_root/artifacts/cache"
 
 nix build ./nix --out-link artifacts/result
-nix build ./nix#fhs-shell --out-link artifacts/fhs-shell
+nix build ./nix#native-shell --out-link artifacts/native-shell
 
-artifacts/fhs-shell/bin/chatgpt-fhs-shell -c '
+artifacts/native-shell/bin/chatgpt-native-shell -c '
   set -e
-  /usr/lib/chatgpt/resources/cua_node/bin/node --version
-  /usr/lib/chatgpt/resources/rg --version
-  /usr/lib/chatgpt/resources/codex --version
-  /usr/lib/chatgpt/resources/cua_node/bin/node "$1"
-  /usr/lib/chatgpt/resources/codex sandbox -- /bin/sh -c '\''
+  "$CHATGPT_RESOURCES/cua_node/bin/node" --version
+  "$CHATGPT_RESOURCES/rg" --version
+  "$CHATGPT_RESOURCES/codex" --version
+  "$CHATGPT_RESOURCES/cua_node/bin/node" "$1"
+  "$CHATGPT_RESOURCES/codex" sandbox -- /bin/sh -c '\''
     printf "Codex sandbox command passed\n"
     awk "/^NoNewPrivs:|^Seccomp:/" /proc/self/status
   '\''

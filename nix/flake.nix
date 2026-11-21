@@ -23,6 +23,8 @@
         chatgpt = prototypes.${system}.app;
         payload = prototypes.${system}.payload;
         fhs-shell = prototypes.${system}.shell;
+      } // nixpkgs.lib.optionalAttrs (system == "aarch64-linux") {
+        native-shell = prototypes.${system}.nativeShell;
       });
 
       apps = forAllSystems (system: {
@@ -35,6 +37,12 @@
           type = "app";
           program = "${prototypes.${system}.shell}/bin/chatgpt-fhs-shell";
           meta.description = "Open the ChatGPT prototype's diagnostic FHS shell";
+        };
+      } // nixpkgs.lib.optionalAttrs (system == "aarch64-linux") {
+        native-shell = {
+          type = "app";
+          program = "${prototypes.${system}.nativeShell}/bin/chatgpt-native-shell";
+          meta.description = "Open a shell with the native ChatGPT runtime environment";
         };
       });
     };

@@ -1,5 +1,10 @@
 # Prototype validation
 
+This page records the earlier **FHS** prototype. The ARM64 default launcher was
+replaced on 2026-10-08; see [native launcher validation](native-launcher.md) for
+current build, userspace sudo, graphics and Home Manager results. Earlier GUI
+feature/login results below have not all been repeated with the native package.
+
 Tested 2026-10-02 (Asia/Bangkok) on ARM64 NixOS 26.11 with Nix 2.34.8.
 
 ## Pins and build

@@ -1,9 +1,21 @@
 # ChatGPT desktop on NixOS
 
-A prototype of the official ChatGPT Linux desktop app, version **26.928.31416**,
-using the bundled Electron/Owl runtime in `buildFHSEnv`.
+A package of the official ChatGPT Linux desktop app, version **26.928.31416**,
+preserving the bundled Electron/Owl runtime. The ARM64 launcher now uses native
+Nix ELF loaders and runtime library paths, without an outer FHS/bubblewrap
+environment. Local Full access commands can use the host's sudo policy.
 
-The ARM64 package builds and maps ChatGPT windows on XWayland and native Wayland. Bundled
+The native package was built and activated through the daily dotfiles' Home
+Manager configuration on 2026-10-08. An isolated GUI maps on native Wayland;
+its main process and Codex child have `NoNewPrivs=0`, and a bundled app-server
+Full access command successfully runs `sudo -n id`. Chromium renderer and
+Codex workspace sandboxes remain enabled. The user's normal app session still
+needs a full quit/relaunch and command check. See
+[native launcher validation and restart steps](docs/native-launcher.md).
+
+The following earlier feature results were established with the FHS prototype:
+
+The ARM64 prototype builds and maps ChatGPT windows on XWayland and native Wayland. Bundled
 helpers, native Node libraries, plugin setup, and local sandbox commands pass
 smoke checks. An authenticated bundled Codex session fixed a small project and
 resumed successfully in a fresh process using existing login credentials.
@@ -49,6 +61,15 @@ The flake lives in `nix/` so local package downloads and extracted artifacts are
 not copied into the flake's source. Nixpkgs and both vendor downloads are pinned
 by revision/version and hash. The flake permits these specific unfree app
 packages; it does not change system-wide Nix configuration.
+
+The standalone flake retains its original older nixpkgs pin. On a newer host,
+its glibc can be incompatible with `/run/opengl-driver` (observed on this
+machine). The applied dotfiles package uses the daily Home Manager package set,
+with no lock update. Launch this installed package with
+`~/.nix-profile/bin/chatgpt`. When consuming the local packaging with a compatible
+package set, use `(import ./package.nix { inherit pkgs; }).app` as the module's
+`programs.chatgpt.package` override. The current GitHub input still contains the
+FHS package; the self-contained dotfiles override supplies this native change.
 
 ## Home Manager desktop integration
 
@@ -117,38 +138,44 @@ Run the helper/native-library/sandbox checks:
 bash scripts/smoke-prototype.sh
 ```
 
-This builds the package and diagnostic shell, then tests the bundled Node,
+This builds the native package and diagnostic shell, then tests the bundled Node,
 ripgrep, Codex CLI, Sharp image operations, Classic Level database operations,
 and a local command inside Codex's own sandbox. Test data goes under `artifacts/`.
-No model request or account login is involved.
+No model request or account login is involved. Unsandboxed native children must
+have `NoNewPrivs=0`; the Codex sandbox retains `NoNewPrivs=1` and seccomp filtering.
+Set `CHATGPT_TEST_SUDO=1` to additionally test your existing passwordless sudo
+with `sudo -n id`. `scripts/check-native-agent.py` also tests command execution
+through the bundled app-server without a model or login.
 
 `scripts/check-home-manager.nix` evaluates the module with an explicit Home
 Manager source and builds its desktop/MIME files. It also checks disabled mode
 and argument forwarding with a harmless substitute executable. See the
 [validation record](docs/prototype-validation.md) for the tested revision.
 
-For a diagnostic shell with the same runtime libraries and mounts:
+For a diagnostic shell with the native runtime environment:
 
 ```sh
-XDG_CACHE_HOME="$PWD/artifacts/cache" nix run ./nix#fhs-shell
+XDG_CACHE_HOME="$PWD/artifacts/cache" nix run ./nix#native-shell
 ```
 
 ## Packaging choices
 
-- Preserve vendor binaries, ASAR, native modules, and relative resource paths.
+- Preserve the vendor runtime, ASAR, native modules, and relative resource paths;
+  patch the selected Linux/glibc ELF loaders and RPATHs in the derivation.
   Do not replace the Electron runtime or run Debian maintainer scripts.
 - Supply GUI, graphics, audio, credential, USB, TPM, and Qt libraries. Make
   bubblewrap available for Codex's nested Linux sandbox.
 - Preserve sandboxing. No `--no-sandbox` or approval-bypass flag is added.
-- Stage unchanged bundled plugin files with writable permission metadata in a
-  version/hash-specific user cache. Mount that source read-only inside the app's
-  FHS environment so plugin copies can be updated in the user's Codex home.
+- Stage bundled plugin files with writable permission metadata in a
+  payload-specific user cache. Point the app's supported bundled-plugin resource
+  environment variable at that cache so its copied manifests can be rewritten.
 - Provide the desktop entry, icon, and AppStream assets. Retain `codex:` and
   document handlers; omit the vendor's broad HTTP/HTTPS handler registration.
 
-FHS packaging supplies a compatibility filesystem; it is not a security boundary
-for the whole app. Normal desktop access and the vendor's own sandbox still
-apply. Removing the versioned cache directory is safe when the app is closed;
+The native launcher inherits normal desktop access and does not set
+`no_new_privs` on the app main process. Chromium and Codex apply their own
+sandbox policies to the appropriate children. The legacy `fhs-shell` remains
+available for historical diagnostics. Removing the cache directory is safe when the app is closed;
 it will be recreated on the next launch.
 
 See [package inspection](docs/ubuntu-package-inspection.md) for the binary

@@ -42,6 +42,8 @@ and sandbox behavior before declaring the port functional.
 - The flake is under `nix/`; use `nix build ./nix` and `nix run ./nix`.
   Keep artifacts outside that directory to avoid copying downloads into flake sources.
 - Read `docs/prototype-validation.md` for current runtime results and limits.
+- Read `docs/native-launcher.md` for the ARM64 native launcher, sudo/graphics
+  validation, applied dotfiles override and pending normal-session restart check.
 - Run `bash scripts/smoke-prototype.sh` for build, helper, native-library, and
   nested-sandbox checks. GUI tests additionally need normal desktop access.
 - Set `CODEX_HOME`, `XDG_CACHE_HOME`, and `--user-data-dir` to workspace artifact

@@ -64,22 +64,30 @@ let
     '';
   };
 
+  runtimeLibraries = with pkgs; [
+    gtk3 glib at-spi2-core nss nspr dbus
+    (lib.getLib cups) expat alsa-lib libgbm libdrm
+    libX11 libXext libXcomposite libXdamage libXfixes libXrandr
+    libxcb libxkbcommon cairo pango gdk-pixbuf udev
+    libnotify libGL vulkan-loader wayland
+    openssl libusb1 tpm2-tss libsecret (lib.getLib pulseaudio)
+    (lib.getLib qt5.qtbase) (lib.getLib qt6.qtbase)
+  ];
+
+  native = import ./native.nix {
+    inherit pkgs payload source version runtimeLibraries;
+    meta = meta // { description = "Official ChatGPT desktop app with native Nix runtime libraries"; };
+  };
+
   fhs = pkgs.buildFHSEnv {
     pname = "chatgpt";
     inherit version;
     executableName = "chatgpt";
     multiArch = false;
 
-    targetPkgs = p: with p; [
-      gtk3 glib at-spi2-core nss nspr dbus
-      (lib.getLib cups) expat alsa-lib libgbm libdrm
-      libX11 libXext libXcomposite libXdamage libXfixes libXrandr
-      libxcb libxkbcommon cairo pango gdk-pixbuf udev
-      libnotify libGL vulkan-loader wayland
-      openssl libusb1 tpm2-tss libsecret (lib.getLib pulseaudio)
-      (lib.getLib qt5.qtbase) (lib.getLib qt6.qtbase)
+    targetPkgs = p: runtimeLibraries ++ (with p; [
       xdg-utils git cacert bubblewrap
-    ];
+    ]);
 
     # /usr/lib points to /usr/lib64 on both supported systems. This mount-local
     # symlink preserves the original app path without touching host /usr.
@@ -116,7 +124,10 @@ let
   };
 in {
   inherit payload;
-  app = fhs;
+  # Native development/validation is scoped to ARM64. Keep the existing,
+  # unvalidated x86-64 definition as it was.
+  app = if pkgs.stdenv.hostPlatform.system == "aarch64-linux" then native.app else fhs;
+  nativeShell = native.shell;
   shell = fhs.override {
     executableName = "chatgpt-fhs-shell";
     runScript = "bash";

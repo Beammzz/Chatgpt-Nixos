@@ -1,5 +1,10 @@
 # User desktop activation
 
+The latest daily-system activation is the
+[2026-10-08 native launcher change](native-launcher.md#dotfiles-and-activation).
+It retains the GitHub input and login module, with a self-contained native
+package override in the dotfiles. The records below describe earlier activations.
+
 The existing Home Manager source is `/home/harumi/.dotfiles`, with configuration
 `homeConfigurations.harumi`. A staged copy was built on 2026-10-02 under
 `artifacts/desktop-activation/staged-dotfiles`. The user explicitly authorized
